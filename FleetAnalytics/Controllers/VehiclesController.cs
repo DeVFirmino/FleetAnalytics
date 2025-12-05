@@ -12,32 +12,19 @@ namespace FleetAnalytics.Controllers;
 public class VehiclesController : ControllerBase
 {
 
-    private readonly FleetDbContext _context;
 
-    public VehiclesController(FleetDbContext context)
     {
-        _context = context;
     }
 
-
-    [HttpGet("ping")]
-    public IActionResult Ping()
-    {
-        return Ok();
-    }
-
+    
     [HttpPost]
-    public async Task<IActionResult> AddVehicle([FromBody] Vehicle vehicle)
-    {
-        _context.Vehicles.Add(vehicle);
+        {
 
-        await _context.SaveChangesAsync();
-        return Ok(vehicle);
     }
-    
-    
-    
-    
+
+
+
+
 
 
 
