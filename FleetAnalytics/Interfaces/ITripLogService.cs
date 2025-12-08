@@ -9,4 +9,6 @@ public interface ITripLogService
     public Task<List<TripLogResponseDto>> GetAllTripLogs();
     
     public Task<List<TripLogResponseDto>>  GetLogsVehicleIdById(int id);
+    
+    public Task<List<AlertResponseDto>> GetAlerts();
 }

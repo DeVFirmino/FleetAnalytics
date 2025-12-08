@@ -18,6 +18,8 @@ public class FleetDbContext : Microsoft.EntityFrameworkCore.DbContext
 
     public DbSet<TripLog> TripLogs { get; set; }
     
+    public DbSet<Alert> Alerts { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
