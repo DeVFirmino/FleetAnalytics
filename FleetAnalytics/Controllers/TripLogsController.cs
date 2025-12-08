@@ -47,8 +47,17 @@ public class TripLogsController : ControllerBase
 
         return Ok(logs);
     }
+
+    [HttpGet("alerts")]
+    public async Task<IActionResult> GetAlerts()
+    {
+        var alerts = await _service.GetAlerts();
+        
+        return Ok(alerts);
         
     }
+
+}
      
         
     
