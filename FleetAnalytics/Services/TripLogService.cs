@@ -26,7 +26,7 @@ public class TripLogService : ITripLogService
       //1 - Validate if the vehicle exists using bool.
       bool vehicleExists = await _context.Vehicles.AnyAsync(v => v.Id == request.VehicleId); 
  
-      //Createed a if clause of if is not true I throw an error that vehicle not exists.
+      //Created if clause of if is not true I throw an error that vehicle not exists.
       if (!vehicleExists)
       {
           throw new KeyNotFoundException($"Vehicle ID {request.VehicleId} not found.");
