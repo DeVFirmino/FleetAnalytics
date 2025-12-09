@@ -56,7 +56,7 @@ SwaggerEndpoints.png
 ![Swagger UI](FleetAnalytics/assets/SwaggerEndpoints.png)
 
 ### Speeding Alert Logic (JSON Response)
-![JSON Response](FleetAnalytics/assets/GetAlertsEndpoints.png)
+![JSON Response](FleetAnalytics/assets/GetAlertsEndpoint.png)
 
 ### 🧠 Speeding Alert Logic
 
