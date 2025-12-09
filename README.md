@@ -53,10 +53,19 @@ SwaggerEndpoints.png
 ## Screenshots
 
 ### API Documentation (Swagger)
-![Swagger UI](assets/SwaggerEndpoints.png)
+![Swagger UI](FleetAnalytics/assets/SwaggerEndpoints.png)
 
 ### Speeding Alert Logic (JSON Response)
-![JSON Response](assets/GetAlertsEndpoints.png)
+![JSON Response](Fleet/Analytics/assets/GetAlertsEndpoints.png)
+
+### 🧠 Speeding Alert Logic
+
+The screenshot above confirms that the Backend Intelligence is working correctly. It demonstrates three key architectural features handled by the `TripLogService`:
+
+1.  **Relational Mapping (JOINs):** The field `"vehicleModel": "Volvo"` does not exist in the Alerts table. The API dynamically fetches it from the `Vehicles` table using a **LINQ Sub-query**, proving the Foreign Key relationship is active.
+2.  **Enum Conversion:** The system stores the alert type as an `int` (1) in the database for performance but projects it as a readable string (`"UserSpeeding"`) for the client.
+3.  **Business Logic Execution:** The `"details"` field confirms that the **Ingestion Service** correctly intercepted the telemetry, calculated the violation (`125 km/h > 80 km/h`), and generated a context-aware message before saving the transaction.
+
 ## ER Diagram
 
 ```mermaid
@@ -111,3 +120,12 @@ erDiagram
     ```
 5.  **Access Swagger:**
     Open `http://localhost:5056/swagger` in your browser.
+
+    ## Future Improvements
+
+To make this application production-ready the next steps are:
+
+* **Unit Testing:** Implement `xUnit` tests for `TripLogService` to guarantee business logic stability (speed limits).
+* **Security:** Add **JWT Authentication** to protect endpoints (only authorized devices should send telemetry).
+* **Containerization:** Add `Dockerfile` and `docker-compose` for easy deployment.
+ 
