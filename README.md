@@ -48,7 +48,15 @@ The system calls `SaveChangesAsync()` **only once** at the end of the flow. This
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/api/alerts` | Returns a list of all generated alerts (e.g., Speeding), joined with Vehicle data. |
+SwaggerEndpoints.png
 
+## Screenshots
+
+### API Documentation (Swagger)
+![Swagger UI](assets/SwaggerEndpoints.png)
+
+### Speeding Alert Logic (JSON Response)
+![JSON Response](assets/GetAlertsEndpoints.png)
 ## ER Diagram
 
 ```mermaid
