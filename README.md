@@ -33,7 +33,7 @@ Before persisting data, the **Service Layer** analyzes the speed:
 ### 3. Atomic Persistence
 The system calls `SaveChangesAsync()` **only once** at the end of the flow. This guarantees that the Telemetry Log and any potential Alert are committed in a single database transaction.
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Telemetry (TripLogs)
 
@@ -58,7 +58,7 @@ SwaggerEndpoints.png
 ### Speeding Alert Logic (JSON Response)
 ![JSON Response](FleetAnalytics/assets/GetAlertsEndpoint.png)
 
-### 🧠 Speeding Alert Logic
+### Speeding Alert Logic
 
 The screenshot above confirms that the Backend Intelligence is working correctly. It demonstrates three key architectural features handled by the `TripLogService`:
 
