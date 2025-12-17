@@ -121,11 +121,4 @@ erDiagram
 5.  **Access Swagger:**
     Open `http://localhost:5056/swagger` in your browser.
 
-    ## Future Improvements
-
-To make this application production-ready the next steps are:
-
-* **Unit Testing:** Implement `xUnit` tests for `TripLogService` to guarantee business logic stability (speed limits).
-* **Security:** Add **JWT Authentication** to protect endpoints (only authorized devices should send telemetry).
-* **Containerization:** Add `Dockerfile` and `docker-compose` for easy deployment.
- 
+     
