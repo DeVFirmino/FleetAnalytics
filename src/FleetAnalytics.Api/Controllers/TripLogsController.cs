@@ -1,9 +1,11 @@
 using FleetAnalytics.Application.DTOs;
 using FleetAnalytics.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FleetAnalytics.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TripLogsController : ControllerBase
@@ -18,15 +20,8 @@ public class TripLogsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> IngestTelemetry([FromBody] SaveTripLogDto request)
     {
-        try
-        {
-            await _service.IngestTelemetry(request);
-            return NoContent();
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        await _service.IngestTelemetry(request);
+        return NoContent();
     }
 
     [HttpGet]
