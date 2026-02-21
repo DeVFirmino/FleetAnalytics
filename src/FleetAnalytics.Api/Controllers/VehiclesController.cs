@@ -1,9 +1,11 @@
 using FleetAnalytics.Application.DTOs;
 using FleetAnalytics.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FleetAnalytics.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class VehiclesController : ControllerBase
