@@ -9,6 +9,8 @@ public class Vehicle
     public string VehicleModel { get; set; } = string.Empty;
 
     public double FuelCapacity { get; set; }
+    public double Odometer { get; set; }
+    public double LastMaintenanceOdometer { get; set; }
 
     // Navigation properties
     public ICollection<TripLog> TripLogs { get; set; } = new List<TripLog>();
