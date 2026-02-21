@@ -46,6 +46,29 @@ public class TripLogService : ITripLogService
             await _alertRepository.AddAsync(speedingAlert);
         }
 
+        var lastLog = await _tripLogRepository.GetLatestByVehicleIdAsync(request.VehicleId);
+        if (lastLog != null)
+        {
+            var distance = CalculateDistance(lastLog.Latitude, lastLog.Longitude, request.Latitude, request.Longitude);
+            vehicle.Odometer += distance;
+
+            // Trigger maintenance alert if distance since last maintenance > 10000 km
+            if (vehicle.Odometer - vehicle.LastMaintenanceOdometer > 10000)
+            {
+                var maintenanceAlert = new Alert
+                {
+                    VehicleId = vehicle.Id,
+                    Type = AlertType.MaintenanceDue,
+                    Timestamp = request.Timestamp,
+                    Speed = request.Speed,
+                    Details = $"Maintenance due. Odometer: {Math.Round(vehicle.Odometer, 2)} km. Last maintenance: {Math.Round(vehicle.LastMaintenanceOdometer, 2)} km."
+                };
+                await _alertRepository.AddAsync(maintenanceAlert);
+            }
+
+            await _vehicleRepository.UpdateAsync(vehicle);
+        }
+
         var newLog = new TripLog
         {
             VehicleId = request.VehicleId,
@@ -104,5 +127,23 @@ public class TripLogService : ITripLogService
             Type = a.Type.ToString(),
             VehicleModel = vehicleLookup.GetValueOrDefault(a.VehicleId, "Unknown")
         }).ToList();
+    }
+
+    private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371; // Radius of the earth in km
+        var dLat = Deg2Rad(lat2 - lat1);
+        var dLon = Deg2Rad(lon2 - lon1);
+        var a =
+            Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+            Math.Cos(Deg2Rad(lat1)) * Math.Cos(Deg2Rad(lat2)) *
+            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c; // Distance in km
+    }
+
+    private static double Deg2Rad(double deg)
+    {
+        return deg * (Math.PI / 180);
     }
 }
