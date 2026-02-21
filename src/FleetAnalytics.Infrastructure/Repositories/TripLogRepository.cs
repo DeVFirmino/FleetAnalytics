@@ -31,4 +31,12 @@ public class TripLogRepository : ITripLogRepository
             .Where(t => t.VehicleId == vehicleId)
             .ToListAsync();
     }
+
+    public async Task<TripLog?> GetLatestByVehicleIdAsync(int vehicleId)
+    {
+        return await _context.TripLogs
+            .Where(t => t.VehicleId == vehicleId)
+            .OrderByDescending(t => t.Timestamp)
+            .FirstOrDefaultAsync();
+    }
 }
