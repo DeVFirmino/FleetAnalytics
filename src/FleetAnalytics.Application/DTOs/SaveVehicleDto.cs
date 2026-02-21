@@ -13,4 +13,7 @@ public class SaveVehicleDto
 
     [Range(1, 1000, ErrorMessage = "Tank capacity must contain 1 to 1000.")]
     public double FuelCapacity { get; set; }
+
+    [Range(0, double.MaxValue, ErrorMessage = "Odometer must be positive.")]
+    public double Odometer { get; set; }
 }
