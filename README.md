@@ -104,7 +104,7 @@ erDiagram
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/DeVFirmino/FleetAnalytics.git](https://github.com/SEU-USUARIO/FleetAnalytics.git)
+    git clone [https://github.com/DeVFirmino/FleetAnalytics.git](https://github.com/DeVFirmino/FleetAnalytics.git)
     ```
 2.  **Navigate to the project folder:**
     ```bash
