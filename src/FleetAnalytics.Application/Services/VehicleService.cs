@@ -27,7 +27,9 @@ public class VehicleService : IVehicleService
         {
             LicensePlate = request.LicensePlate!,
             VehicleModel = request.VehicleModel!,
-            FuelCapacity = request.FuelCapacity
+            FuelCapacity = request.FuelCapacity,
+            Odometer = request.Odometer,
+            LastMaintenanceOdometer = request.Odometer // Initialize to current
         };
 
         var created = await _vehicleRepository.AddAsync(newVehicle);
@@ -37,7 +39,8 @@ public class VehicleService : IVehicleService
             Id = created.Id,
             LicensePlate = created.LicensePlate,
             VehicleModel = created.VehicleModel,
-            FuelCapacity = created.FuelCapacity
+            FuelCapacity = created.FuelCapacity,
+            Odometer = created.Odometer
         };
     }
 
@@ -50,7 +53,8 @@ public class VehicleService : IVehicleService
             Id = v.Id,
             LicensePlate = v.LicensePlate,
             VehicleModel = v.VehicleModel,
-            FuelCapacity = v.FuelCapacity
+            FuelCapacity = v.FuelCapacity,
+            Odometer = v.Odometer
         }).ToList();
     }
 
@@ -68,7 +72,8 @@ public class VehicleService : IVehicleService
             Id = vehicle.Id,
             LicensePlate = vehicle.LicensePlate,
             FuelCapacity = vehicle.FuelCapacity,
-            VehicleModel = vehicle.VehicleModel
+            VehicleModel = vehicle.VehicleModel,
+            Odometer = vehicle.Odometer
         };
     }
 
@@ -97,6 +102,7 @@ public class VehicleService : IVehicleService
         vehicle.LicensePlate = request.LicensePlate!;
         vehicle.VehicleModel = request.VehicleModel!;
         vehicle.FuelCapacity = request.FuelCapacity;
+        vehicle.Odometer = request.Odometer;
 
         await _vehicleRepository.UpdateAsync(vehicle);
 
@@ -105,7 +111,8 @@ public class VehicleService : IVehicleService
             Id = vehicle.Id,
             LicensePlate = vehicle.LicensePlate,
             VehicleModel = vehicle.VehicleModel,
-            FuelCapacity = vehicle.FuelCapacity
+            FuelCapacity = vehicle.FuelCapacity,
+            Odometer = vehicle.Odometer
         };
     }
 }

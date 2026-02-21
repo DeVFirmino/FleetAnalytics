@@ -6,4 +6,5 @@ public class VehicleResponseDto
     public string LicensePlate { get; set; } = string.Empty;
     public string VehicleModel { get; set; } = string.Empty;
     public double FuelCapacity { get; set; }
+    public double Odometer { get; set; }
 }

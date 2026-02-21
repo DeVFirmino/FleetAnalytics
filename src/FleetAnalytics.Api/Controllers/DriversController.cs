@@ -1,9 +1,11 @@
 using FleetAnalytics.Application.DTOs;
 using FleetAnalytics.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FleetAnalytics.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class DriversController : ControllerBase
@@ -32,15 +34,8 @@ public class DriversController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        try
-        {
-            var driver = await _service.GetById(id);
-            return Ok(driver);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
+        var driver = await _service.GetById(id);
+        return Ok(driver);
     }
 
     [HttpPut("{id}")]
