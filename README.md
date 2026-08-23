@@ -18,6 +18,12 @@ Backend API built with .NET for real time vehicle telemetry ingestion and analys
 * **Validation:** Data Annotations & Business Logic Validation
 * **Documentation:** Swagger
 
+## Architecture
+
+![Diagram showing how a vehicle app sends a trip update, FleetAnalytics checks it, applies speed and service rules, creates any alerts, and saves everything together](docs/img/architecture.svg)
+
+*Editable source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw) — open it on [excalidraw.com](https://excalidraw.com) and re-export the SVG after changes.*
+
 ## How It Works
 
 ### 1. Ingestion & Validation
