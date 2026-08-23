@@ -18,6 +18,12 @@ Backend API built with .NET for real time vehicle telemetry ingestion and analys
 * **Validation:** Data Annotations & Business Logic Validation
 * **Documentation:** Swagger
 
+## Architecture
+
+![Architecture diagram: a JWT-authenticated client calls the ASP.NET Core 9 API; the request passes the JWT gate, Controllers, Application services and EF Core repositories down to the SQLite file, while POST /api/triplogs fans into three outcomes — the stored trip log, a HighSpeed alert and a MaintenanceDue alert](docs/img/architecture.svg)
+
+*Editable source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw) — open it on [excalidraw.com](https://excalidraw.com) and re-export the SVG after changes.*
+
 ## How It Works
 
 ### 1. Ingestion & Validation
