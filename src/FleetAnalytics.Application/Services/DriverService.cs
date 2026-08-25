@@ -8,10 +8,12 @@ namespace FleetAnalytics.Application.Services;
 public class DriverService : IDriverService
 {
     private readonly IDriverRepository _driverRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DriverService(IDriverRepository driverRepository)
+    public DriverService(IDriverRepository driverRepository, IUnitOfWork unitOfWork)
     {
         _driverRepository = driverRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<DriverResponseDto> AddDriver(SaveDriverDto request)
@@ -27,9 +29,10 @@ public class DriverService : IDriverService
             IsActive = true
         };
 
-        var created = await _driverRepository.AddAsync(newDriver);
+        _driverRepository.Add(newDriver);
+        await _unitOfWork.SaveChangesAsync();
 
-        return MapToDto(created);
+        return MapToDto(newDriver);
     }
 
     public async Task<List<DriverResponseDto>> GetAllDrivers()
@@ -65,7 +68,8 @@ public class DriverService : IDriverService
         driver.Email = request.Email ?? string.Empty;
         driver.PhoneNumber = request.PhoneNumber ?? string.Empty;
 
-        await _driverRepository.UpdateAsync(driver);
+        _driverRepository.Update(driver);
+        await _unitOfWork.SaveChangesAsync();
 
         return MapToDto(driver);
     }
@@ -79,7 +83,8 @@ public class DriverService : IDriverService
             return false;
         }
 
-        await _driverRepository.DeleteAsync(driver);
+        _driverRepository.Delete(driver);
+        await _unitOfWork.SaveChangesAsync();
         return true;
     }
 

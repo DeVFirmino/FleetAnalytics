@@ -1,9 +1,10 @@
 using FleetAnalytics.Domain.Entities;
+using FleetAnalytics.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace FleetAnalytics.Infrastructure.Data;
 
-public class FleetDbContext : DbContext
+public class FleetDbContext : DbContext, IUnitOfWork
 {
     public FleetDbContext(DbContextOptions<FleetDbContext> options) : base(options)
     {

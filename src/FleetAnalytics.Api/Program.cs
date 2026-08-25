@@ -15,6 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<FleetDbContext>(options =>
     options.UseSqlite("Data Source=fleet.db"));
 
+// Unit of work: the scoped DbContext commits all staged changes in one transaction
+builder.Services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<FleetDbContext>());
+
 // Repositories (Infrastructure)
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<ITripLogRepository, TripLogRepository>();

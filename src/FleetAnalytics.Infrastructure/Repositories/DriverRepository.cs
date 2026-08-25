@@ -24,22 +24,18 @@ public class DriverRepository : IDriverRepository
         return await _context.Drivers.ToListAsync();
     }
 
-    public async Task<Driver> AddAsync(Driver driver)
+    public void Add(Driver driver)
     {
         _context.Drivers.Add(driver);
-        await _context.SaveChangesAsync();
-        return driver;
     }
 
-    public async Task UpdateAsync(Driver driver)
+    public void Update(Driver driver)
     {
         _context.Drivers.Update(driver);
-        await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Driver driver)
+    public void Delete(Driver driver)
     {
         _context.Drivers.Remove(driver);
-        await _context.SaveChangesAsync();
     }
 }

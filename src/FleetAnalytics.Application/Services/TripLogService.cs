@@ -11,15 +11,18 @@ public class TripLogService : ITripLogService
     private readonly ITripLogRepository _tripLogRepository;
     private readonly IVehicleRepository _vehicleRepository;
     private readonly IAlertRepository _alertRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public TripLogService(
         ITripLogRepository tripLogRepository,
         IVehicleRepository vehicleRepository,
-        IAlertRepository alertRepository)
+        IAlertRepository alertRepository,
+        IUnitOfWork unitOfWork)
     {
         _tripLogRepository = tripLogRepository;
         _vehicleRepository = vehicleRepository;
         _alertRepository = alertRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task IngestTelemetry(SaveTripLogDto request)
@@ -43,7 +46,7 @@ public class TripLogService : ITripLogService
                 Speed = request.Speed,
                 Details = $"Exceeded speed limit of {SPEED_LIMIT} km/h. Recorded speed: {request.Speed} km/h"
             };
-            await _alertRepository.AddAsync(speedingAlert);
+            _alertRepository.Add(speedingAlert);
         }
 
         var lastLog = await _tripLogRepository.GetLatestByVehicleIdAsync(request.VehicleId);
@@ -63,10 +66,10 @@ public class TripLogService : ITripLogService
                     Speed = request.Speed,
                     Details = $"Maintenance due. Odometer: {Math.Round(vehicle.Odometer, 2)} km. Last maintenance: {Math.Round(vehicle.LastMaintenanceOdometer, 2)} km."
                 };
-                await _alertRepository.AddAsync(maintenanceAlert);
+                _alertRepository.Add(maintenanceAlert);
             }
 
-            await _vehicleRepository.UpdateAsync(vehicle);
+            _vehicleRepository.Update(vehicle);
         }
 
         var newLog = new TripLog
@@ -78,7 +81,11 @@ public class TripLogService : ITripLogService
             Speed = request.Speed
         };
 
-        await _tripLogRepository.AddAsync(newLog);
+        _tripLogRepository.Add(newLog);
+
+        // Single commit: the trip log, any alerts and the odometer update
+        // are persisted atomically — all of them or none of them.
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<List<TripLogResponseDto>> GetAllTripLogs()

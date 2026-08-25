@@ -4,6 +4,6 @@ namespace FleetAnalytics.Domain.Interfaces;
 
 public interface IAlertRepository
 {
-    Task AddAsync(Alert alert);
+    void Add(Alert alert);
     Task<List<Alert>> GetAllAsync();
 }

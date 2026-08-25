@@ -7,7 +7,7 @@ public interface IVehicleRepository
     Task<Vehicle?> GetByIdAsync(int id);
     Task<List<Vehicle>> GetAllAsync();
     Task<bool> ExistsByPlateAsync(string licensePlate);
-    Task<Vehicle> AddAsync(Vehicle vehicle);
-    Task UpdateAsync(Vehicle vehicle);
-    Task DeleteAsync(Vehicle vehicle);
+    void Add(Vehicle vehicle);
+    void Update(Vehicle vehicle);
+    void Delete(Vehicle vehicle);
 }
