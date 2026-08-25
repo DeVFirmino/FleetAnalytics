@@ -29,22 +29,18 @@ public class VehicleRepository : IVehicleRepository
         return await _context.Vehicles.AnyAsync(v => v.LicensePlate == licensePlate);
     }
 
-    public async Task<Vehicle> AddAsync(Vehicle vehicle)
+    public void Add(Vehicle vehicle)
     {
         _context.Vehicles.Add(vehicle);
-        await _context.SaveChangesAsync();
-        return vehicle;
     }
 
-    public async Task UpdateAsync(Vehicle vehicle)
+    public void Update(Vehicle vehicle)
     {
         _context.Vehicles.Update(vehicle);
-        await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Vehicle vehicle)
+    public void Delete(Vehicle vehicle)
     {
         _context.Vehicles.Remove(vehicle);
-        await _context.SaveChangesAsync();
     }
 }

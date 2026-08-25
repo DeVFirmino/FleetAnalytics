@@ -8,10 +8,12 @@ namespace FleetAnalytics.Application.Services;
 public class VehicleService : IVehicleService
 {
     private readonly IVehicleRepository _vehicleRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public VehicleService(IVehicleRepository vehicleRepository)
+    public VehicleService(IVehicleRepository vehicleRepository, IUnitOfWork unitOfWork)
     {
         _vehicleRepository = vehicleRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<VehicleResponseDto> AddVehicle(SaveVehicleDto request)
@@ -32,15 +34,16 @@ public class VehicleService : IVehicleService
             LastMaintenanceOdometer = request.Odometer // Initialize to current
         };
 
-        var created = await _vehicleRepository.AddAsync(newVehicle);
+        _vehicleRepository.Add(newVehicle);
+        await _unitOfWork.SaveChangesAsync();
 
         return new VehicleResponseDto
         {
-            Id = created.Id,
-            LicensePlate = created.LicensePlate,
-            VehicleModel = created.VehicleModel,
-            FuelCapacity = created.FuelCapacity,
-            Odometer = created.Odometer
+            Id = newVehicle.Id,
+            LicensePlate = newVehicle.LicensePlate,
+            VehicleModel = newVehicle.VehicleModel,
+            FuelCapacity = newVehicle.FuelCapacity,
+            Odometer = newVehicle.Odometer
         };
     }
 
@@ -86,7 +89,8 @@ public class VehicleService : IVehicleService
             return false;
         }
 
-        await _vehicleRepository.DeleteAsync(vehicle);
+        _vehicleRepository.Delete(vehicle);
+        await _unitOfWork.SaveChangesAsync();
         return true;
     }
 
@@ -104,7 +108,8 @@ public class VehicleService : IVehicleService
         vehicle.FuelCapacity = request.FuelCapacity;
         vehicle.Odometer = request.Odometer;
 
-        await _vehicleRepository.UpdateAsync(vehicle);
+        _vehicleRepository.Update(vehicle);
+        await _unitOfWork.SaveChangesAsync();
 
         return new VehicleResponseDto
         {

@@ -14,10 +14,9 @@ public class AlertRepository : IAlertRepository
         _context = context;
     }
 
-    public async Task AddAsync(Alert alert)
+    public void Add(Alert alert)
     {
         _context.Alerts.Add(alert);
-        await _context.SaveChangesAsync();
     }
 
     public async Task<List<Alert>> GetAllAsync()

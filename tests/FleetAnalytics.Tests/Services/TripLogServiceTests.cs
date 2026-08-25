@@ -12,6 +12,7 @@ public class TripLogServiceTests
     private readonly Mock<ITripLogRepository> _mockTripLogRepo;
     private readonly Mock<IVehicleRepository> _mockVehicleRepo;
     private readonly Mock<IAlertRepository> _mockAlertRepo;
+    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly TripLogService _service;
 
     public TripLogServiceTests()
@@ -19,11 +20,13 @@ public class TripLogServiceTests
         _mockTripLogRepo = new Mock<ITripLogRepository>();
         _mockVehicleRepo = new Mock<IVehicleRepository>();
         _mockAlertRepo = new Mock<IAlertRepository>();
+        _mockUnitOfWork = new Mock<IUnitOfWork>();
 
         _service = new TripLogService(
             _mockTripLogRepo.Object,
             _mockVehicleRepo.Object,
-            _mockAlertRepo.Object);
+            _mockAlertRepo.Object,
+            _mockUnitOfWork.Object);
     }
 
     [Fact]
@@ -33,6 +36,7 @@ public class TripLogServiceTests
         _mockVehicleRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Vehicle?)null);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.IngestTelemetry(request));
+        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -45,8 +49,9 @@ public class TripLogServiceTests
 
         await _service.IngestTelemetry(request);
 
-        _mockAlertRepo.Verify(r => r.AddAsync(It.Is<Alert>(a => a.Type == AlertType.HighSpeed)), Times.Once);
-        _mockTripLogRepo.Verify(r => r.AddAsync(It.IsAny<TripLog>()), Times.Once);
+        _mockAlertRepo.Verify(r => r.Add(It.Is<Alert>(a => a.Type == AlertType.HighSpeed)), Times.Once);
+        _mockTripLogRepo.Verify(r => r.Add(It.IsAny<TripLog>()), Times.Once);
+        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -64,7 +69,10 @@ public class TripLogServiceTests
         await _service.IngestTelemetry(request);
 
         // Odometer should have increased by ~11.1km, total is now > 10000.
-        _mockAlertRepo.Verify(r => r.AddAsync(It.Is<Alert>(a => a.Type == AlertType.MaintenanceDue)), Times.Once);
-        _mockVehicleRepo.Verify(r => r.UpdateAsync(It.IsAny<Vehicle>()), Times.Once);
+        _mockAlertRepo.Verify(r => r.Add(It.Is<Alert>(a => a.Type == AlertType.MaintenanceDue)), Times.Once);
+        _mockVehicleRepo.Verify(r => r.Update(It.IsAny<Vehicle>()), Times.Once);
+
+        // The whole operation commits exactly once.
+        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

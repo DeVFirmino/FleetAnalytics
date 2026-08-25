@@ -9,12 +9,14 @@ namespace FleetAnalytics.Tests.Services;
 public class DriverServiceTests
 {
     private readonly Mock<IDriverRepository> _mockRepo;
+    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly DriverService _service;
 
     public DriverServiceTests()
     {
         _mockRepo = new Mock<IDriverRepository>();
-        _service = new DriverService(_mockRepo.Object);
+        _mockUnitOfWork = new Mock<IUnitOfWork>();
+        _service = new DriverService(_mockRepo.Object, _mockUnitOfWork.Object);
     }
 
     [Fact]
@@ -29,8 +31,8 @@ public class DriverServiceTests
             PhoneNumber = "555-1234"
         };
 
-        _mockRepo.Setup(r => r.AddAsync(It.IsAny<Driver>()))
-            .ReturnsAsync((Driver d) => { d.Id = 1; return d; });
+        _mockRepo.Setup(r => r.Add(It.IsAny<Driver>()))
+            .Callback((Driver d) => d.Id = 1);
 
         var result = await _service.AddDriver(request);
 
@@ -38,7 +40,8 @@ public class DriverServiceTests
         Assert.Equal(1, result.Id);
         Assert.Equal("John", result.FirstName);
         Assert.Equal("Doe", result.LastName);
-        _mockRepo.Verify(r => r.AddAsync(It.IsAny<Driver>()), Times.Once);
+        _mockRepo.Verify(r => r.Add(It.IsAny<Driver>()), Times.Once);
+        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

@@ -14,10 +14,9 @@ public class TripLogRepository : ITripLogRepository
         _context = context;
     }
 
-    public async Task AddAsync(TripLog tripLog)
+    public void Add(TripLog tripLog)
     {
         _context.TripLogs.Add(tripLog);
-        await _context.SaveChangesAsync();
     }
 
     public async Task<List<TripLog>> GetAllAsync()

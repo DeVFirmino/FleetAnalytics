@@ -4,7 +4,7 @@ namespace FleetAnalytics.Domain.Interfaces;
 
 public interface ITripLogRepository
 {
-    Task AddAsync(TripLog tripLog);
+    void Add(TripLog tripLog);
     Task<List<TripLog>> GetAllAsync();
     Task<List<TripLog>> GetByVehicleIdAsync(int vehicleId);
     Task<TripLog?> GetLatestByVehicleIdAsync(int vehicleId);
