@@ -33,7 +33,7 @@ The system receives a JSON payload via `POST /api/triplogs`. It validates:
 
 ### 2. Intelligent Processing
 Before persisting data, the **Service Layer** analyzes the speed:
-* **If Speed > 80 km/h:** An `Alert` object is instantiated with type `UserSpeeding`.
+* **If Speed > 80 km/h:** An `Alert` object is instantiated with type `HighSpeed`.
 * The Alert is added to the DbContext transaction context.
 
 ### 3. Atomic Persistence
@@ -54,22 +54,21 @@ The system calls `SaveChangesAsync()` **only once** at the end of the flow. This
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/api/alerts` | Returns a list of all generated alerts (e.g., Speeding), joined with Vehicle data. |
-SwaggerEndpoints.png
 
 ## Screenshots
 
 ### API Documentation (Swagger)
-![Swagger UI](FleetAnalytics/assets/SwaggerEndpoints.png)
+![Swagger UI](src/FleetAnalytics.Api/assets/SwaggerEndpoints.png)
 
 ### Speeding Alert Logic (JSON Response)
-![JSON Response](FleetAnalytics/assets/GetAlertsEndpoint.png)
+![JSON Response](src/FleetAnalytics.Api/assets/GetAlertsEndpoint.png)
 
 ### Speeding Alert Logic
 
 The screenshot above confirms that the Backend Intelligence is working correctly. It demonstrates three key architectural features handled by the `TripLogService`:
 
 1.  **Relational Mapping (JOINs):** The field `"vehicleModel": "Volvo"` does not exist in the Alerts table. The API dynamically fetches it from the `Vehicles` table using a **LINQ Sub-query**, proving the Foreign Key relationship is active.
-2.  **Enum Conversion:** The system stores the alert type as an `int` (1) in the database for performance but projects it as a readable string (`"UserSpeeding"`) for the client.
+2.  **Enum Conversion:** The system stores the alert type as an `int` (1) in the database for performance but projects it as a readable string (`"HighSpeed"`) for the client.
 3.  **Business Logic Execution:** The `"details"` field confirms that the **Ingestion Service** correctly intercepted the telemetry, calculated the violation (`125 km/h > 80 km/h`), and generated a context-aware message before saving the transaction.
 
 ## ER Diagram
@@ -112,9 +111,9 @@ erDiagram
     ```bash
     git clone [https://github.com/DeVFirmino/FleetAnalytics.git](https://github.com/DeVFirmino/FleetAnalytics.git)
     ```
-2.  **Navigate to the project folder:**
+2.  **Navigate to the API project folder:**
     ```bash
-    cd FleetAnalytics
+    cd FleetAnalytics/src/FleetAnalytics.Api
     ```
 3.  **Apply Database Migrations:**
     ```bash
