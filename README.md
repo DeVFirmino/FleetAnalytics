@@ -92,11 +92,14 @@ curl -X POST http://localhost:5056/api/triplogs \
 | `GET` | `/api/triplogs/{id}` | Readings for the vehicle with that id |
 | `GET` | `/api/triplogs/alerts` | All alerts, with the vehicle model |
 
-An unknown vehicle or driver id returns 404 with a `ProblemDetails` body.
+An unknown vehicle or driver id returns 404 with a `ProblemDetails` body. The one exception is `GET /api/triplogs/{id}`, which returns an empty list.
 
 ## Tests
 
+Run them from the repository root. From `src/FleetAnalytics.Api` the command finishes without running any test:
+
 ```bash
+cd ../..
 dotnet test
 ```
 
@@ -105,6 +108,6 @@ The 14 tests are mostly unit tests of the services with Moq. [`TripLogIngestionA
 ## Scope
 
 - Login is a hard-coded `admin` / `admin`, and the JWT signing key falls back to a value in the code when `Jwt:Key` isn't configured.
-- Nothing records a service, so once a vehicle passes 10,000 km every new reading adds another `MaintenanceDue` alert.
+- Nothing records a service, so once a vehicle has driven 10,000 km since registration, every new reading adds another `MaintenanceDue` alert.
 - Drivers are stored but not linked to vehicles or readings.
 - `AlertType` also has `LowFuel` and `Geofence`, but nothing raises them.
