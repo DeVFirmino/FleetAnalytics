@@ -1,129 +1,110 @@
 # Fleet Analytics API
- 
-Backend API built with .NET for real time vehicle telemetry ingestion and analysis. It enforces business rules (speeding limits), and generates actionable alerts while ensuring data integrity.
 
-## Features
+A .NET API that receives GPS readings from vehicles, adds the distance driven to each vehicle's odometer and raises an alert when a vehicle goes over the speed limit or is due for a service. A reading, its alerts and the odometer update are saved in one transaction, so a failure halfway through never leaves an alert without the reading that caused it.
 
-* **High Volume Data Ingestion:** Optimized `POST` endpoint to receive telemetry data (Location, Speed, Timestamp).
-* **Real Time Intelligence:** Built-in business logic engine that automatically detects speeding violations (> 80 km/h) during the ingestion process.
-* **Transactional Integrity:** Implements **Atomic Transactions** using Entity Framework Core. Ensures that a Telemetry Log and a generated Alert are either *both* saved or *neither* is saved, preventing data inconsistency.
-* **Relational Mapping:** Efficient retrieval of complex data using LINQ sub-queries to join Vehicles, Logs, and Alerts without overhead.
-* **RESTful Architecture:** Clean separation of concerns with dedicated Controllers and Services.
+.NET 9 · ASP.NET Core · EF Core · SQLite · xUnit
 
-## Tech Stack
-
-* **Framework:** .NET 9 (C#)
-* **Database:** SQLite (for development) / Entity Framework Core (ORM)
-* **Architecture:** Layered Architecture (Models, DTOs, Services, Controllers)
-* **Validation:** Data Annotations & Business Logic Validation
-* **Documentation:** Swagger
-
-## Architecture
+[Run it](#run-it) · [Send two readings](#send-two-readings) · [Tests](#tests)
 
 ![Diagram showing how a vehicle app sends a trip update, FleetAnalytics checks it, applies speed and service rules, creates any alerts, and saves everything together](docs/img/architecture.svg)
 
-*Editable source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw) — open it on [excalidraw.com](https://excalidraw.com) and re-export the SVG after changes.*
+*Editable source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw). Open it on [excalidraw.com](https://excalidraw.com) and export the SVG again after changes.*
 
-## How It Works
+## What happens to a reading
 
-### 1. Ingestion & Validation
-The system receives a JSON payload via `POST /api/triplogs`. It validates:
-* **Foreign Key Integrity:** Checks if the `VehicleId` exists in the database.
-* **Data Completeness:** Ensures all required telemetry fields are present.
+`POST /api/triplogs` receives one reading: vehicle, latitude, longitude, speed and time. [`TripLogService`](src/FleetAnalytics.Application/Services/TripLogService.cs) then:
 
-### 2. Intelligent Processing
-Before persisting data, the **Service Layer** analyzes the speed:
-* **If Speed > 80 km/h:** An `Alert` object is instantiated with type `HighSpeed`.
-* The Alert is added to the DbContext transaction context.
+- returns 404 if the vehicle doesn't exist
+- adds a `HighSpeed` alert when the speed is above 80 km/h
+- measures the distance from the vehicle's previous reading with the Haversine formula and adds it to the odometer
+- adds a `MaintenanceDue` alert once the vehicle has driven more than 10,000 km since it was registered
+- saves the reading, the alerts and the odometer with a single `SaveChangesAsync`
 
-### 3. Atomic Persistence
-The system calls `SaveChangesAsync()` **only once** at the end of the flow. This guarantees that the Telemetry Log and any potential Alert are committed in a single database transaction.
+The repositories only stage changes. The `DbContext` is registered as the unit of work and commits everything at the end, so if any step throws before that, nothing is written.
 
-## API Endpoints
+## Run it
 
-### Telemetry (TripLogs)
+Install the [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) and the EF Core tool, then create the SQLite database and start the API:
 
-| Method | Endpoint | Description |
+```bash
+dotnet tool install --global dotnet-ef
+git clone https://github.com/DeVFirmino/FleetAnalytics.git
+cd FleetAnalytics/src/FleetAnalytics.Api
+dotnet ef database update
+dotnet run
+```
+
+The database file, `fleet.db`, is created in the folder you run these commands from, so keep both in `src/FleetAnalytics.Api`. Swagger is at <http://localhost:5056/swagger>.
+
+## Send two readings
+
+Every endpoint except login needs a token. Login accepts a fixed `admin` / `admin` pair, which is enough for a local run:
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:5056/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"admin"}' | jq -r .token)
+```
+
+Register a vehicle, then send two readings about 10 km apart, the second one at 95 km/h:
+
+```bash
+curl -X POST http://localhost:5056/api/vehicles \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"licensePlate":"ABC-1234","vehicleModel":"Volvo FH","fuelCapacity":400,"odometer":9995}'
+
+curl -X POST http://localhost:5056/api/triplogs \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"vehicleId":1,"latitude":35.8989,"longitude":14.5146,"speed":50,"timestamp":"2026-09-26T09:00:00Z"}'
+
+curl -X POST http://localhost:5056/api/triplogs \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"vehicleId":1,"latitude":35.8858,"longitude":14.4031,"speed":95,"timestamp":"2026-09-26T09:12:00Z"}'
+```
+
+`GET /api/triplogs/alerts` now returns the speeding alert:
+
+```json
+[
+  {
+    "id": 1,
+    "vehicleModel": "Volvo FH",
+    "speed": 95,
+    "type": "HighSpeed",
+    "timestamp": "2026-09-26T09:12:00"
+  }
+]
+```
+
+`GET /api/vehicles/1` shows the odometer at about 10,005.15 km. It went past 10,000 without a maintenance alert because the count starts from the odometer the vehicle was registered with, 9,995 here, not from zero.
+
+## Endpoints
+
+| Method | Route | What it does |
 | :--- | :--- | :--- |
-| `POST` | `/api/triplogs` | Ingests new GPS telemetry data. Triggers alerts if rules are violated. |
-| `GET` | `/api/triplogs` | Retrieves full history of all telemetry logs. |
-| `GET` | `/api/triplogs/{id}` | Retrieves telemetry history for a specific Vehicle ID. |
+| `POST` | `/api/auth/login` | Returns a JWT for `admin` / `admin` |
+| `POST`, `GET` | `/api/vehicles` | Registers a vehicle, lists vehicles |
+| `GET`, `PUT`, `DELETE` | `/api/vehicles/{id}` | Reads, updates or deletes one vehicle |
+| `POST`, `GET` | `/api/drivers` | Registers a driver, lists drivers |
+| `GET`, `PUT`, `DELETE` | `/api/drivers/{id}` | Reads, updates or deletes one driver |
+| `POST` | `/api/triplogs` | Records one reading and any alerts it raises |
+| `GET` | `/api/triplogs` | All readings, with the vehicle model |
+| `GET` | `/api/triplogs/{id}` | Readings for the vehicle with that id |
+| `GET` | `/api/triplogs/alerts` | All alerts, with the vehicle model |
 
-### Alerts
+An unknown vehicle or driver id returns 404 with a `ProblemDetails` body.
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/alerts` | Returns a list of all generated alerts (e.g., Speeding), joined with Vehicle data. |
+## Tests
 
-## Screenshots
+```bash
+dotnet test
+```
 
-### API Documentation (Swagger)
-![Swagger UI](src/FleetAnalytics.Api/assets/SwaggerEndpoints.png)
+The 14 tests are mostly unit tests of the services with Moq. [`TripLogIngestionAtomicityTests`](tests/FleetAnalytics.Tests/Services/TripLogIngestionAtomicityTests.cs) runs ingestion against an in-memory SQLite database instead. One test checks that the reading and its speeding alert are saved together. The other makes the trip log step throw after the alert was staged and checks that neither row was written.
 
-### Speeding Alert Logic (JSON Response)
-![JSON Response](src/FleetAnalytics.Api/assets/GetAlertsEndpoint.png)
+## Scope
 
-### Speeding Alert Logic
-
-The screenshot above confirms that the Backend Intelligence is working correctly. It demonstrates three key architectural features handled by the `TripLogService`:
-
-1.  **Relational Mapping (JOINs):** The field `"vehicleModel": "Volvo"` does not exist in the Alerts table. The API dynamically fetches it from the `Vehicles` table using a **LINQ Sub-query**, proving the Foreign Key relationship is active.
-2.  **Enum Conversion:** The system stores the alert type as an `int` (1) in the database for performance but projects it as a readable string (`"HighSpeed"`) for the client.
-3.  **Business Logic Execution:** The `"details"` field confirms that the **Ingestion Service** correctly intercepted the telemetry, calculated the violation (`125 km/h > 80 km/h`), and generated a context-aware message before saving the transaction.
-
-## ER Diagram
-
-```mermaid
-erDiagram
-    VEHICLE ||--o{ TRIPLOG : "has history"
-    VEHICLE ||--o{ ALERT : "triggers"
-
-    VEHICLE {
-        int Id PK
-        string VehicleModel
-        string LicensePlate
-        int FuelCapacity
-    }
-
-    TRIPLOG {
-        int Id PK
-        int VehicleId FK
-        double Latitude
-        double Longitude
-        double Speed
-        datetime Timestamp
-    }
-
-    ALERT {
-        int Id PK
-        int VehicleId FK
-        int Type
-        string Details
-        datetime Timestamp
-    }
-``` 
-
-
-
-## How to Run
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/DeVFirmino/FleetAnalytics.git](https://github.com/DeVFirmino/FleetAnalytics.git)
-    ```
-2.  **Navigate to the API project folder:**
-    ```bash
-    cd FleetAnalytics/src/FleetAnalytics.Api
-    ```
-3.  **Apply Database Migrations:**
-    ```bash
-    dotnet ef database update
-    ```
-4.  **Run the API:**
-    ```bash
-    dotnet run
-    ```
-5.  **Access Swagger:**
-    Open `http://localhost:5056/swagger` in your browser.
-
-     
+- Login is a hard-coded `admin` / `admin`, and the JWT signing key falls back to a value in the code when `Jwt:Key` isn't configured.
+- Nothing records a service, so once a vehicle passes 10,000 km every new reading adds another `MaintenanceDue` alert.
+- Drivers are stored but not linked to vehicles or readings.
+- `AlertType` also has `LowFuel` and `Geofence`, but nothing raises them.
