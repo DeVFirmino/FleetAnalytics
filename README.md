@@ -6,6 +6,8 @@ A .NET API that receives GPS readings from vehicles, adds the distance driven to
 
 [Run it](#run-it) · [Send two readings](#send-two-readings) · [Tests](#tests)
 
+![Animation: a delivery van sends its location as it drives, its kilometres add up, and when it goes over 80 km/h a speeding alert goes on its record.](docs/how-it-works.gif)
+
 ![Diagram showing how a vehicle app sends a trip update, FleetAnalytics checks it, applies speed and service rules, creates any alerts, and saves everything together](docs/img/architecture.svg)
 
 *Editable source: [`docs/architecture.excalidraw`](docs/architecture.excalidraw). Open it on [excalidraw.com](https://excalidraw.com) and export the SVG again after changes.*
