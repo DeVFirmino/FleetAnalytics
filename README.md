@@ -1,6 +1,6 @@
 # Fleet Analytics API
 
-A .NET API that receives GPS readings from vehicles, adds the distance driven to each vehicle's odometer and raises an alert when a vehicle goes over the speed limit or is due for a service. A reading, its alerts and the odometer update are saved in one transaction, so a failure halfway through never leaves an alert without the reading that caused it.
+Send two GPS readings for a vehicle and watch the odometer update. The .NET API saves each reading, the odometer update and any resulting alerts in the same transaction.
 
 .NET 9 · ASP.NET Core · EF Core · SQLite · xUnit
 
